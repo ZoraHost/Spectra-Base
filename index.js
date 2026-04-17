@@ -109,24 +109,22 @@ ${chalk.cyan(' Base')}     : Spectra
 };
 
 const displayFooter = () => {
-    lolcatjs.fromString(' > Terima kasih sudah menggunakan Spectra Bot - ZoraHost/B16_OFC' + '\n');
+    lolcatjs.fromString(`\n> Terima kasih sudah menggunakan Spectra Bot - ZoraHost/B16_OFC` + '\n');
 };
 
 const showTerminalUI = async () => {
     await displayLogo();
     displayInfo();
-    displayFooter();
     createTmpFolder();
+    displayFooter();
 };
 
 // Koneksi WhatsApp
 async function startSpectra() {
-    // Tampilkan UI Terminal
     await showTerminalUI();
     
     console.log(chalk.green("\n[INFO]"), chalk.white("Connecting to WhatsApp..."));
 
-    // Simpan sesi login
     const { state, saveCreds } = await useMultiFileAuthState(path.resolve("./spectraSession"));
 
     // New version
@@ -197,7 +195,6 @@ async function spamPairingRequest() {
   console.log('Selesai. 15 menit telah berlalu.');
 }
 
-    // Simpan sesi login
     spctra.ev.on("creds.update", saveCreds);
 
     // Informasi Koneksi
@@ -211,7 +208,6 @@ async function spamPairingRequest() {
         }
     });
 
-    // Respon pesan masuk
     spctra.ev.on("messages.upsert", async (m) => {
     const msg = m.messages[0];
     const sender = msg.key.remoteJid;

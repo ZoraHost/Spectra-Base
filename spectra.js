@@ -81,7 +81,7 @@ export default async (spctra, m, meta) => {
         const more = String.fromCharCode(8206);
         const readmore = more.repeat(4001);
 
-        // Custom reply
+        // Custom Reply
         const spreply = (teks) => spctra.sendMessage(sender, { text: teks }, { quoted: msg });
 
         // Waktu
@@ -117,7 +117,7 @@ const menuList = `Hi *${pushName}*, ${salam} 👋
 ✾ *Owner Name*: ${global.ownerName}
 ✾ *Runtime*: ${runtime(process.uptime())}
 ✾ *Versi SC*: ${global.versiSC}
-✾ *Time*: ${dt} WIB
+✾ *Time*: ${wib} WIB
  
 ${readmore}
 > COMMAND LIST
@@ -129,23 +129,6 @@ ${readmore}
 
 > ${global.footer}`
 
-                /*const menuText = `🤖 *SPECTRA BOT*
-
-${greeting} *${pushName}* 👋
-
-📜 *COMMAND LIST*
-• ${usedPrefix}ping
-• ${usedPrefix}sp
-• ${usedPrefix}ai
-• ${usedPrefix}menu
-
-📊 *Info Bot*
-⏱️ Uptime: ${runtime(process.uptime())}
-💾 RAM: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1)} MB
-⏰ Time: ${new Date().toLocaleTimeString('id-ID')} WIB
-
-> ${global.footer}`;
-*/
                 await spreply(menuList);
             }
             break;
@@ -155,61 +138,150 @@ ${greeting} *${pushName}* 👋
             }
             break
 
-            case "ping":
-            case "botstatus":
-            case "statusbot": {
-                // Waktu sekarang
-                const now = new Date();
-                const jam = now.getHours();
-                const menit = now.getMinutes();
-                const detik = now.getSeconds();
-                
-                // Hitung ping
-                const start = Date.now();
-                await spreply("🏓 Pinging...");
-                const ping = Date.now() - start;
-                
-                // RAM usage
-                const usedRam = process.memoryUsage();
-                const ramUsage = (usedRam.heapUsed / 1024 / 1024).toFixed(2);
-                const totalRam = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
-                
-                // Uptime
-                const uptimeSeconds = process.uptime();
-                const days = Math.floor(uptimeSeconds / 86400);
-                const hours = Math.floor((uptimeSeconds % 86400) / 3600);
-                const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-                const seconds = Math.floor(uptimeSeconds % 60);
-                const uptime = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-                
-                // Response message
-                const response = `╭━━━━━━━━━━━━━━━╮
-┃ *📊 STATUS BOT*
-╰━━━━━━━━━━━━━━━╯
+case "ping":
+case "botstatus":
+case "statusbot": {
+    // Memory usage
+    const used = process.memoryUsage();
+    
+    // CPU info
+    const cpus = os.cpus().map((cpu) => {
+        const total = Object.keys(cpu.times).reduce(
+            (last, type) => last + cpu.times[type],
+            0,
+        );
+        return {
+            ...cpu,
+            total: total
+        };
+    });
+    
+    const cpu = cpus.reduce(
+        (last, cpu, _, { length }) => {
+            last.total += cpu.total;
+            last.speed += cpu.speed / length;
+            last.times.user += cpu.times.user;
+            last.times.nice += cpu.times.nice;
+            last.times.sys += cpu.times.sys;
+            last.times.idle += cpu.times.idle;
+            last.times.irq += cpu.times.irq;
+            return last;
+        },
+        {
+            speed: 0,
+            total: 0,
+            times: {
+                user: 0,
+                nice: 0,
+                sys: 0,
+                idle: 0,
+                irq: 0,
+            },
+        },
+    );
+    
+    // Waktu sekarang
+    const date = new Date();
+    const jam = date.getHours();
+    const menit = date.getMinutes();
+    const detik = date.getSeconds();
+    
+    // RAM calculations
+    const ram = `${formatSize(process.memoryUsage().heapUsed)} / ${formatSize(os.totalmem())}`;
+    const totalRamBytes = os.totalmem();
+    const freeRamBytes = os.freemem();
+    const usedRamBytes = totalRamBytes - freeRamBytes;
+    const ramUsagePercent = (usedRamBytes / totalRamBytes) * 100;
+    
+    // Disk space
+    const space = await checkDiskSpace(process.cwd());
+    const totalSpaceBytes = space.size;
+    const freeSpaceBytes = space.free;
+    const usedSpaceBytes = totalSpaceBytes - freeSpaceBytes;
+    
+    // Bandwidth
+    let upload = "N/A";
+    let download = "N/A";
+    try {
+        const bandwidth = await checkBandwidth();
+        upload = bandwidth.upload || "N/A";
+        download = bandwidth.download || "N/A";
+    } catch (err) {
+        console.error("Bandwidth check error:", err.message);
+    }
+    
+    // Latency calculation
+    const startPerf = performance.now();
+    // Simulasi delay kecil untuk mengukur latency
+    await new Promise(resolve => setTimeout(resolve, 10));
+    const endPerf = performance.now();
+    const latency = endPerf - startPerf;
+    
+    // Build response
+    let respon = ` *ᴘ ɪ ɴ ɢ* 
+ ${Math.round(latency)} ms 
+ ${latency.toFixed(4)} ms 
 
-╭━━━━❲ *INFO* ❳━━━━╮
-┃ 🏓 *Ping:* ${ping} ms
-┃ ⏰ *Time:* ${jam}:${menit}:${detik}
-┃ 📅 *Date:* ${now.toLocaleDateString('id-ID')}
-╰━━━━━━━━━━━━━━━━━╯
+ *ʀ ᴜ ɴ ᴛ ɪ ᴍ ᴇ*
+ ${runtime(process.uptime())} 
 
-╭━━❲ *SYSTEM* ❳━━╮
-┃ 💾 *RAM:* ${ramUsage} MB / ${totalRam} GB
-┃ ⏱️ *Uptime:* ${uptime}
-┃ 🖥️ *Platform:* ${os.platform()}
-┃ 💻 *Host:* ${os.hostname()}
-╰━━━━━━━━━━━━━━━╯
-
-╭━━❲ *NODE JS* ❳━━╮
-┃ 📦 *Version:* ${process.version}
-┃ 📁 *Arch:* ${process.arch}
-╰━━━━━━━━━━━━━━━╯
-
-> Spectra Bot`;
-                
-                await spreply(response);
-            }
-            break
+ *s ᴇ ʀ ᴠ ᴇ ʀ* 
+ *🛑 ʀᴀᴍ:* ${formatSize(usedRamBytes)} (${Math.floor(ramUsagePercent)}%) / ${formatSize(totalRamBytes)} 
+ *🔵 ғʀᴇᴇRAM:* ${formatSize(freeRamBytes)} 
+ *🔴 ᴍᴇᴍᴏʀy:* ${ram}
+ *🗂 ᴅɪꜱᴋ:* ${formatSize(usedSpaceBytes)} / ${formatSize(totalSpaceBytes)}
+ *📂 ғʀᴇᴇDISK:* ${formatSize(freeSpaceBytes)}
+ *🔭 ᴘʟᴀᴛғᴏʀᴍ:* ${os.platform()}
+ *🧿 sᴇʀᴠᴇʀ:* ${os.hostname()}
+ *📤 ᴜᴘʟᴏᴀᴅ:* ${upload}
+ *📥 ᴅᴏᴡɴʟᴏᴀᴅ:* ${download}
+ *⏰ ᴛɪᴍᴇ sᴇʀᴠᴇʀ:* ${jam} : ${menit} : ${detik}
+ 
+ *📮 ɴᴏᴅᴇᴊꜱ ᴠᴇʀꜱɪᴏɴ:* ${process.version}
+ *💻 ᴄᴘᴜ ᴍᴏᴅᴇʟ:* ${cpus[0]?.model || "Unknown"}
+ *📊 ᴏꜱ ᴠᴇʀꜱɪᴏɴ:* ${os.version()}
+ 
+_NodeJS Memory Usage_
+${Object.keys(used)
+    .map(
+        (key, _, arr) =>
+            `${key.padEnd(Math.max(...arr.map((v) => v.length)), " ")}: ${formatSize(used[key])}`,
+    )
+    .join("\n")}
+${readmore}
+${cpus[0]
+    ? `_Total CPU Usage_
+${cpus[0].model.trim()} (${Math.round(cpu.speed)} MHZ)\n${Object.keys(cpu.times)
+        .map(
+            (type) =>
+                `- *${(type + "*").padEnd(6)}: ${(
+                    (100 * cpu.times[type]) /
+                    cpu.total
+                ).toFixed(2)}%`,
+        )
+        .join("\n")}
+_CPU Core(s) Usage (${cpus.length} Core CPU)_
+${cpus
+    .map(
+        (cpu, i) =>
+            `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Object.keys(
+                cpu.times,
+            )
+                .map(
+                    (type) =>
+                        `- *${(type + "*").padEnd(6)}: ${(
+                            (100 * cpu.times[type]) /
+                            cpu.total
+                        ).toFixed(2)}%`,
+                )
+                .join("\n")}`,
+    )
+    .join("\n\n")}`
+    : ""
+}`.trim();
+    await spctra.sendMessage(sender, { text: respon }, { quoted: msg });
+}
+break;
 
             case "ai": {
                 const prompt = text;
