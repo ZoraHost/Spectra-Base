@@ -91,7 +91,7 @@ ${chalk.green('📃 INFORMASI SCRIPT')}
 ${chalk.cyan(' Author')}   : Zora
 ${chalk.cyan(' GitHub')}   : https://github.com/ZoraHost
 ${chalk.cyan(' Instagram')}: https://www.instagram.com/frell_0303
-${chalk.cyan(' YouTube')}  : @B16_OFC
+${chalk.cyan(' YouTube')}  : @ZoraHost
 ${chalk.cyan(' Base')}     : Spectra
     `),
         {
